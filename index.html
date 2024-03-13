@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Comment Analyzer</title>
+    <!--link rel="stylesheet" type="text/css" href="C:\Users\hamza_sk\Desktop\Hamza\BE\project\front_end\templates\style.css"-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        /* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background: radial-gradient(circle, rgb(0, 0, 0), rgb(24, 24, 24), rgb(49, 49, 49));
+    color: #fffdfd;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+header {
+    background: radial-gradient(circle, #000000, #d41212);
+    color: #fff;
+    padding: 20px 0;
+    position: center; /* Add this */
+}
+
+/* YouTube logo styling */
+#youtube-logo {
+    position: absolute;
+    top: 40px; /* Adjust as needed */
+    left: 40px; /* Adjust as needed */
+    width: 100px; /* Adjust as needed */
+    height: auto;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+header h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+
+main {
+    padding: 20px 0;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1000px; /* Adjust as needed */
+   margin: 0 auto;
+}
+
+.input-wrapper {
+    margin-bottom: 15px; /* Add margin to separate inputs */
+    display: flex; /* Use flexbox to align items horizontally */
+    align-items: center; /* Align items vertically */
+}
+
+.input-wrapper label {
+    margin-right: 10px; /* Add space between label and input */
+    flex-shrink: 0; /* Ensure label doesn't shrink */
+    width: 200px; /* Set a fixed width for the label */
+    height: 50px;
+}
+
+.input-wrapper input {
+    flex-grow: 1; /* Allow input to grow and fill remaining space */
+    height: 40px;
+    border-radius: 15px;
+}
+
+
+#submit_button {
+    background-color: #8a0303; /* Button background color */
+    color: #fff; /* Text color */
+    padding: 10px 20px; /* Padding */
+    border: none; /* Remove border */
+    border-radius: 15px; /* Rounded corners */
+    cursor: pointer; /* Cursor style */
+    font-size: 16px; /* Font size */
+    transition: background-color 0.3s ease; /* Transition effect */
+    margin-top: 15px; /* Add margin to separate button */
+}
+
+#submit_button:hover {
+    background-color: #fafafa; /* Change background color on hover */
+    color: #0d0d0d;
+}
+
+
+/*.form-section:hover,
+.results-section:hover {
+    background-color: #fff;
+    color: #333;
+}*/
+
+.form-section h3,
+.results-section h3 {
+    margin-bottom: 20px;
+}
+
+#loading {
+    display: none;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #333;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.video-info p {
+    margin-bottom: 10px;
+}
+
+.comments-section {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.positive-comments,
+.negative-comments {
+    width: 48%;
+}
+
+.positive-comments h4,
+.negative-comments h4 {
+    margin-bottom: 10px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+ul li {
+    margin-bottom: 10px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px 0;
+    background: radial-gradient(circle, #000000, #d41212);
+    color: #fff;
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        
+        <!-- Add the YouTube logo with an anchor tag -->
+        <a href="https://www.youtube.com" target="_blank">
+            <img id="youtube-logo" src="C:\Users\hamza_sk\Desktop\Hamza\BE\project\front_end\templates\youtube-logo.png" alt="YouTube Logo">
+        </a>
+        <div class="container">
+            <h1>YouTube Comment Analyzer</h1>
+            <h2>Understand the Sentiment Behind YouTube Comments</h2>
+        </div>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <div class="container">
+                <h3>Get Started</h3>
+                <form method="post" action="/scrap" class="form-container">
+                    <div class="input-wrapper">
+                        <label for="youtube_url">Paste your YouTube video URL:</label>
+                        <input type="text" id="youtube_url" name="youtube_url" required>
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="user_email">Your Email Address:</label>
+                        <input type="email" id="user_email" name="user_email" required>
+                    </div>
+                    <input type="submit" value="Analyze Comments" id="submit_button">
+                </form>
+            </div>
+        </section>
+
+        <section id="loading" class="loading-section">
+            <div class="container">
+                <div class="spinner"></div>
+                <p>Fetching Comments...</p>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <div class="container">
+                <h3>Analysis Results</h3>
+                <!--div class="video-info">
+                    <p><strong>Video Title:</strong> {{ title }}</p>
+                    <p><strong>Published by:</strong> {{ owner }}</p>
+                    <p><strong>Total Comments:</strong> {{ total_comments }}</p>
+                    <p><strong>Total Positive Comments:</strong> {{ positive_comment }}</p>
+                    <p><strong>Total Negative Comments:</strong> {{ negative_comment }}</p>
+                </div-->
+                {% if show_charts %}
+                <div class="container">
+                    <h3>Histogram</h3>
+                    <img src="{{ url_for('static', filename='templates/histogram.png') }}" alt="Histogram">
+                </div>
+
+                <div class="container">
+                    <h3>Pie Chart</h3>
+                    <img src="{{ url_for('static', filename='templates/pie_chart.png') }}" alt="Pie Chart">
+                </div>
+                {% endif %}
+
+                <div class="comments-section">
+                    <div class="positive-comments">
+                        <h4>Positive Comments</h4>
+                        <ul>
+                            {% for pos_comment in pos_comments %}
+                            <li>{{ pos_comment }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="negative-comments">
+                        <h4>Negative Comments</h4>
+                        <ul>
+                            {% for neg_comment in neg_comments %}
+                            <li>{{ neg_comment }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 YouTube Comment Analyzer. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            $("form").submit(function(event) {
+                event.preventDefault();
+
+                var youtube_url = $("#youtube_url").val();
+                var user_email = $("#user_email").val();
+
+                $("#loading").show();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/scrap",
+                    data: {
+                        youtube_url: youtube_url,
+                        user_email: user_email
+                    },
+                    success: function(response) {
+                        $("#loading").hide();
+                        $("#results").html(response.result);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
